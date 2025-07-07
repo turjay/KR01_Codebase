@@ -2,38 +2,64 @@
 
 ## Proje Tanımı
 
-Bu repo, **Kocaeli Üniversitesi Formula Student Takımı (KOU Racing)** için geliştirilen **Vehicle Control Unit (VCU)** yazılımını içerir.  
-Proje, STM32 mikrodenetleyici üzerinde çalışmakta olup; araç içi sensör verilerinin okunması, işlenmesi, CAN protokolüyle iletilmesi ve SD karta loglanması işlevlerini yerine getirir.
-
----
-
-## Sistem Mimarisi
-
-- Tüm kodlar **tek bir ana CubeMX projesi** (`vcu`) içinde çalışır.
-- Her bir sensör modülü (`gyro`, `apps`, `bpps`, `speed`, `crash`) ayrı `STM32` dosyalarında `modules/` klasöründe yer alır.
-- `vcu`, klasörü bu modülleri kullanarak verileri işler ve yönetir.
-- **Loglama** ve **CAN ile veri iletimi**, ortak `VehicleData_t` struct'ı üzerinden gerçekleştirilir.
+**STM32F407** tabanlı bir araç kontrol ünitesi projesidir. Bu proje, KOU Racing Formula Student takımının araç içi sensör verilerini toplayan, işleyen ve diğer sistemlerle haberleştiren modüler bir VCU mimarisi sunar.
 
 ---
 
 ## Dosya Yapısı
 
 ```plaintext
-VCU-Project/
-├── vcu/           # Tüm modüllerin çağrılıp işlendiği ana dosya
+KOURacingVCU/
 │
-├── modules/                    # Tüm sensör ve sistem modülleri burada
-│   ├── apps_sensor.[c/h]       # Gaz pedalı sensörü (APPS)
-│   ├── bpps_sensor.[c/h]       # Fren pedalı sensörü (BPPS)
-│   ├── speed_sensor.[c/h]      # Hız sensörü
-│   ├── gyro_sensor.[c/h]       # Gyro sensörü
-│   └── crash_sensor.[c/h]      # Çarpışma sensörü
-│   
+├── docs/ # Dokümantasyon ve teknik belgeler
 │
-├── docs/                       # Teknik dökümantasyon
+├── test/ # Modüllerin test edildiği bağımsız test yapısı
+│ ├── apps_sensor/
+│ ├── bpps_sensor/
+│ ├── crash_sensor/
+│ ├── gyro_sensor/
+│ ├── speed_sensor/
+│ └── steering_sensor/
 │
-├── tools/                      # Yardımcı analiz araçları
+├── tools/ # Scriptler, yardımcı araçlar
 │
-├── .gitignore
-├── LICENSE
-└── README.md                   
+├── vcu/ # Asıl proje, tüm modüllerin entegre hali
+│
+├── Core/
+│ ├── Src/Inc # main.c, system init vs.
+│ └── Modules/
+│   └── Apps/
+│     └── Src/Inc
+│   └── Bpps/
+│     └── Src/Inc
+│   └── Crash/
+│     └── Src/Inc
+│   └── Gyro/
+│     └── Src/Inc
+│   └── Speed/
+│     └── Src/Inc
+│   └── Steering/
+│     └── Src/Inc
+├── Drivers/ # HAL ve CMSIS sürücüleri
+├── Middlewares/ # USB Host 
+└── USB_HOST/ # USB yapılandırma dosyalar
+```
+
+## 🔧 Geliştirme Ortamı
+
+- **IDE:** STM32CubeIDE  
+- **MCU:** STM32F407VG
+- **Version Control:** Github
+
+## 🧩 Modüller
+
+| Modül          | Açıklama                                      |
+|----------------|-----------------------------------------------|
+| Apps           | Gaz pedalı konumu (ADC ile okunur)           |
+| Bpps           | Fren pedalı güvenliği                         |
+| Crash          | Çarpışma sensörü / shutoff logic             |
+| Gyro           | Gyrosensör (CAN üzerinden veri okuma)        |
+| Speed          | Hız sensörü (gelecek sürümde)                |
+| Steering       | Direksiyon açı sensörü (ADC/CAN)             |
+
+Her modül CubeMX üzerinden ayrı ayrı yapılandırılıp kendi `Inc/` ve `Src/` dizininde yazılmıştır.
