@@ -1,0 +1,4 @@
+../Core/Src/steering_sensor.c:11:6:SteeringSensor_Init	1
+../Core/Src/steering_sensor.c:15:14:adc_to_voltage	1
+../Core/Src/steering_sensor.c:19:14:voltage_to_angle	3
+../Core/Src/steering_sensor.c:25:6:SteeringSensor_ReadAngles	2
