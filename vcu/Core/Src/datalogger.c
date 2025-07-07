@@ -26,7 +26,7 @@ void Datalogger_Process(void) {
         ParseADCBuffer(buffer_ready);
         buffer_ready = 0;
 
-        // DEBUG: UART çıktısı (ileride SD log'a geçilebilir)
+        // DEBUG: UART çıktısı
         printf("Time: %lu, APPS: %u, BPPS: %u, Brake: %u, Angle: %u, Temp: %u\r\n",
             carData.timestamp_ms,
             carData.apps_value,

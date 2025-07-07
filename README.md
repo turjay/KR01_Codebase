@@ -37,5 +37,3 @@ VCU-Project/
 ├── .gitignore
 ├── LICENSE
 └── README.md                   
-
-...
