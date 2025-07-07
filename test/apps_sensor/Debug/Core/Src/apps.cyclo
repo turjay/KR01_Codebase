@@ -1,3 +1,3 @@
-../Core/Src/apps.c:19:6:APPS_Init	1
-../Core/Src/apps.c:25:6:APPS_Loop	9
-../Core/Src/apps.c:59:6:APPS_IsPermanentFault	1
+../Core/Src/apps.c:25:6:APPS_Init	1
+../Core/Src/apps.c:32:6:APPS_Loop	12
+../Core/Src/apps.c:91:6:APPS_IsPermanentFault	1

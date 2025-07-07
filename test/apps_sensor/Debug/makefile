@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := deneme 8
+BUILD_ARTIFACT_NAME := apps
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-deneme\ 8.elf \
+apps.elf \
 
 MAP_FILES += \
-deneme\ 8.map \
+apps.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-deneme\ 8.list \
+apps.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: deneme\ 8.elf secondary-outputs
+main-build: apps.elf secondary-outputs
 
 # Tool invocations
-deneme\ 8.elf deneme\ 8.map: $(OBJS) $(USER_OBJS) C:\Users\Kahraman\STM32CubeIDE\workspace_1.17.0\deneme\ 8\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "deneme 8.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Kahraman\STM32CubeIDE\workspace_1.17.0\deneme 8\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="deneme 8.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+apps.elf apps.map: $(OBJS) $(USER_OBJS) C:\Users\Kahraman\STM32CubeIDE\workspace_1.17.0\deneme\ 8\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "apps.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Kahraman\STM32CubeIDE\workspace_1.17.0\deneme 8\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="apps.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-deneme\ 8.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "deneme 8.list"
+apps.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "apps.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout deneme\ 8.elf deneme\ 8.list deneme\ 8.map deneme\\ 8.elf
+	-$(RM) apps.elf apps.list apps.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
