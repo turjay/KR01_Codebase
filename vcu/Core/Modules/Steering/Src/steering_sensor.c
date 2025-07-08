@@ -13,7 +13,7 @@ void SteeringSensor_Init(ADC_HandleTypeDef* hadc) {
 }
 
 static float adc_to_voltage(uint32_t raw) {
-    return (raw / MAX_ADC_VALUE) * VREF;
+    return ((float)raw / MAX_ADC_VALUE) * VREF;
 }
 
 static float voltage_to_angle(float voltage) {
@@ -23,20 +23,29 @@ static float voltage_to_angle(float voltage) {
 }
 
 void SteeringSensor_ReadAngles(float* angle1, float* angle2) {
-    uint32_t adc_values[2];
+    uint32_t adc_val1 = 0, adc_val2 = 0;
 
+    ADC_ChannelConfTypeDef sConfig = {0};
+
+    // OUT1 -> ADC1_IN0 (PA0)
+    sConfig.Channel = ADC_CHANNEL_0;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+    HAL_ADC_ConfigChannel(hadc_local, &sConfig);
     HAL_ADC_Start(hadc_local);
-
-    for (int i = 0; i < 2; i++) {
-        HAL_ADC_PollForConversion(hadc_local, HAL_MAX_DELAY);
-        adc_values[i] = HAL_ADC_GetValue(hadc_local);
-    }
-
+    HAL_ADC_PollForConversion(hadc_local, HAL_MAX_DELAY);
+    adc_val1 = HAL_ADC_GetValue(hadc_local);
     HAL_ADC_Stop(hadc_local);
 
-    float voltage1 = adc_to_voltage(adc_values[0]);  // OUT1
-    float voltage2 = adc_to_voltage(adc_values[1]);  // OUT2
+    // OUT2 -> ADC1_IN1 (PA1)
+    sConfig.Channel = ADC_CHANNEL_1;
+    sConfig.Rank = 1;
+    HAL_ADC_ConfigChannel(hadc_local, &sConfig);
+    HAL_ADC_Start(hadc_local);
+    HAL_ADC_PollForConversion(hadc_local, HAL_MAX_DELAY);
+    adc_val2 = HAL_ADC_GetValue(hadc_local);
+    HAL_ADC_Stop(hadc_local);
 
-    *angle1 = voltage_to_angle(voltage1);
-    *angle2 = voltage_to_angle(voltage2);
+    *angle1 = voltage_to_angle(adc_to_voltage(adc_val1));
+    *angle2 = voltage_to_angle(adc_to_voltage(adc_val2));
 }

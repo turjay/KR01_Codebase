@@ -4,12 +4,12 @@
 #include "stm32f4xx_hal.h"
 
 typedef struct {
-    float gyro_x;
-    float gyro_y;
-    float gyro_z;
+    float x;
+    float y;
+    float z;
 } GyroData_t;
 
 void Gyro_Init(void);
-HAL_StatusTypeDef Gyro_Read(GyroData_t* data);
+HAL_StatusTypeDef Gyro_Read(GyroData_t *gyro);
 
-#endif // GYRO_H
+#endif
