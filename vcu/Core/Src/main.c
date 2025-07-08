@@ -50,7 +50,6 @@ I2S_HandleTypeDef hi2s3;
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
