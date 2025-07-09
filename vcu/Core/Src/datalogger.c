@@ -10,6 +10,8 @@ void Datalogger_Init(ADC_HandleTypeDef* hadc) {
     HAL_ADC_Start_DMA(adc_handle, (uint32_t*)adc_dma_buffer, ADC_BUFFER_SIZE);
 }
 
+static uint16_t data[10];
+
 static void ParseADCBuffer(uint8_t half) {
     uint16_t* data = &adc_dma_buffer[half == 1 ? 0 : 5];
 

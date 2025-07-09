@@ -5,16 +5,11 @@
 Bu repo, **Kocaeli Üniversitesi Formula Student Takımı (KOU Racing)** için geliştirilen **Vehicle Control Unit (VCU)** yazılımını içerir.  
 Proje, STM32 mikrodenetleyici üzerinde çalışmakta olup; araç içi sensör verilerinin okunması, işlenmesi, CAN protokolüyle iletilmesi ve SD karta loglanması işlevlerini yerine getirir.
 
----
-
 ## Sistem Mimarisi
 
 - Tüm kodlar **tek bir ana CubeMX projesi** (`vcu`) içinde çalışır.
-- Her bir sensör modülü (`gyro`, `apps`, `bpps`, `speed`, `crash`) ayrı `STM32` dosyalarında `modules/` klasöründe yer alır.
+- Her bir sensör modülü ayrı `STM32` dosyalarında `modules/` klasöründe yer alır.
 - `vcu`, klasörü bu modülleri kullanarak verileri işler ve yönetir.
-- **Loglama** ve **CAN ile veri iletimi**, ortak `VehicleData_t` struct'ı üzerinden gerçekleştirilir.
-
----
 
 ## Dosya Yapısı
 
@@ -36,4 +31,17 @@ VCU-Project/
 │
 ├── .gitignore
 ├── LICENSE
-└── README.md                   
+└── README.md
+```
+
+## To-do list
+
+- [ ] CAN Logger - *Türkay & Batu*
+- [ ] Buzzer - *Türkay & Batu*
+- [ ] VCU - *Türkay & Batu*
+- [ ] Gyro - *Türkay & Batu*
+- [ ] Datalogging - *Türkay & Batu* 
+---
+- [ ] Ekran -  *Mert & Kerim*
+- [ ] APPS & BPPS - *Kerim*
+- [ ] Hız - *Mert*
