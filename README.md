@@ -15,19 +15,20 @@ Proje, STM32 mikrodenetleyici üzerinde çalışmakta olup; araç içi sensör v
 
 ```plaintext
 VCU-Project/
-├── vcu/           # Tüm modüllerin çağrılıp işlendiği ana dosya
+├── vcu/                       # Modüller VCU klasörüne taşımadan önce test ettiğimiz klasör
 │
-├── modules/                    # Tüm sensör ve sistem modülleri burada
-│   ├── apps_sensor.[c/h]       # Gaz pedalı sensörü (APPS)
-│   ├── bpps_sensor.[c/h]       # Fren pedalı sensörü (BPPS)
-│   ├── speed_sensor.[c/h]      # Hız sensörü
-│   ├── gyro_sensor.[c/h]       # Gyro sensörü
-│   └── crash_sensor.[c/h]      # Çarpışma sensörü
-│   
+├── test/                       # Modüller VCU klasörüne taşımadan önce test ettiğimiz klasör
+│   ├── apps_sensor.[c/h]       
+│   ├── bpps_sensor.[c/h]       
+│   ├── crash_sensor.[c/h]      
+│   ├── gyro_sensor.[c/h]
+│   ├── nextion_screen.[c/h]
+│   ├── ready2drive.[c/h]   
+│   └── steering_sensor.[c/h]
 │
-├── docs/                       # Teknik dökümantasyon
+├── docs/                       # Sensörlerin ve bizim dokümantasyonlarımız
 │
-├── tools/                      # Yardımcı analiz araçları
+├── tools/                      # Yardımcı araçlar
 │
 ├── .gitignore
 ├── LICENSE
@@ -36,12 +37,13 @@ VCU-Project/
 
 ## To-do list
 
-- [ ] CAN Logger - *Türkay & Batu*
-- [ ] Buzzer - *Türkay & Batu*
+- [ ] Buzzer - *Batu*
+- [X] R2D - *Türkay*
 - [ ] VCU - *Türkay & Batu*
-- [ ] Gyro - *Türkay & Batu*
-- [ ] Datalogging - *Türkay & Batu* 
+- [X] Gyro - *Türkay*
+- [ ] BMS - *Batu*
+- [ ] BPPS
 ---
-- [ ] Ekran -  *Mert & Kerim*
-- [ ] APPS & BPPS - *Kerim*
+- [ ] Ekran -  *Mert*
+- [X] APPS - *Kerim*
 - [ ] Hız - *Mert*
