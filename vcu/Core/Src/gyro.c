@@ -2,19 +2,17 @@
 #include "stm32f4xx_hal.h"
 
 extern ADC_HandleTypeDef hadc2;
-
 ADC_HandleTypeDef* hadc_gyro = &hadc2;
 
-uint16_t gyrodata[2];
+float gyro_degrees[2];  // -90 ile +90 derece arasında maplenmiş değerler
 
-void GYRO_Init(void)
-{
-    // Başlangıçta yapılacak bir şey yok, ADC ayarı CubeMX'te yapılmalı
-}
+#define GYRO_BIAS      2048    // Ortalama sabit nokta (örnek)
+#define GYRO_MAX_DEV   1024.0f // +/- 1024 sapma  → 1.25V civarı
 
-void GYRO_Loop(void)
+void gyro_start(void)
 {
     ADC_ChannelConfTypeDef sConfig = {0};
+    uint16_t adc_raw;
 
     // ADC2_IN4 -> PA4
     sConfig.Channel = ADC_CHANNEL_4;
@@ -23,7 +21,8 @@ void GYRO_Loop(void)
     HAL_ADC_ConfigChannel(hadc_gyro, &sConfig);
     HAL_ADC_Start(hadc_gyro);
     HAL_ADC_PollForConversion(hadc_gyro, HAL_MAX_DELAY);
-    gyrodata[0] = HAL_ADC_GetValue(hadc_gyro);
+    adc_raw = HAL_ADC_GetValue(hadc_gyro);
+    gyro_degrees[0] = ((int32_t)adc_raw - GYRO_BIAS) * (90.0f / GYRO_MAX_DEV);
     HAL_ADC_Stop(hadc_gyro);
 
     // ADC2_IN5 -> PA5
@@ -31,6 +30,7 @@ void GYRO_Loop(void)
     HAL_ADC_ConfigChannel(hadc_gyro, &sConfig);
     HAL_ADC_Start(hadc_gyro);
     HAL_ADC_PollForConversion(hadc_gyro, HAL_MAX_DELAY);
-    gyrodata[1] = HAL_ADC_GetValue(hadc_gyro);
+    adc_raw = HAL_ADC_GetValue(hadc_gyro);
+    gyro_degrees[1] = ((int32_t)adc_raw - GYRO_BIAS) * (90.0f / GYRO_MAX_DEV);
     HAL_ADC_Stop(hadc_gyro);
 }

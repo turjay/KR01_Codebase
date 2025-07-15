@@ -14,5 +14,7 @@ void APPS_Init(void);
 void APPS_Loop(void);
 void APPS_Deinit(void);
 bool APPS_IsPermanentFault(void);
+int APPS_GetGaz1Percent(void);
+int APPS_GetGaz2Percent(void);
 
 #endif
