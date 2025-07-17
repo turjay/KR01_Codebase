@@ -64,7 +64,7 @@ void APPS_Loop(void)
             // Süreyi kontrol et
             uint32_t elapsed = (now >= diff_start_time) ? (now - diff_start_time) : (0xFFFFFFFF - diff_start_time + now + 1);
 
-            if (elapsed >= 1000) { // 100ms geçtiyse
+            if (elapsed >= 100) { // 100ms geçtiyse
                 permanent_fault = true;
                 __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
 
@@ -80,9 +80,9 @@ void APPS_Loop(void)
             pwm_buffer[0] = (uint32_t)(norm1 * 49);
 
             // Duty değeri sınırlandırılır
-            if (pwm_buffer[0] < 2) {
+            if (pwm_buffer[0] < 1) {
                 pwm_buffer[0] = 0;
-            } else if (pwm_buffer[0] > 47) {
+            } else if (pwm_buffer[0] > 48) {
                 pwm_buffer[0] = 49;
             }
             if(!permanent_fault){
