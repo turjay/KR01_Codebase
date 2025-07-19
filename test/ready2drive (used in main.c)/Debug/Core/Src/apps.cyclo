@@ -1,0 +1,4 @@
+../Core/Src/apps.c:27:6:APPS_Init	1
+../Core/Src/apps.c:34:6:APPS_Loop	13
+../Core/Src/apps.c:97:6:APPS_Deinit	1
+../Core/Src/apps.c:109:6:APPS_IsPermanentFault	1
