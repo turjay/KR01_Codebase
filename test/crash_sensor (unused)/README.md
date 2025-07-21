@@ -1,1 +1,0 @@
-TSAL devresine bağlanacak, mikrodenetleyiciye dahil değil.

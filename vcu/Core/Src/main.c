@@ -24,6 +24,9 @@
 #include "ready2drive.h"
 #include "apps.h"
 #include "gyro.h"
+#include "nextion.h"
+// #include "bpps.h"
+
 #include <string.h>
 #include <stdio.h>
 

@@ -75,7 +75,6 @@ static void MX_ADC2_Init(void);
 /* USER CODE BEGIN 0 */
 extern bool apps_enabled;  // Sadece bildirim, tanım değil!
 
-
 /* USER CODE END 0 */
 
 /**

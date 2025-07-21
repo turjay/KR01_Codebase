@@ -1,7 +1,7 @@
 #include "apps.h"
 #include "stm32f4xx_hal.h"
 #include <stdlib.h>
-#include <math.h>  // fabsf için
+#include <math.h> // fabsf için
 
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim4;
@@ -9,7 +9,7 @@ extern TIM_HandleTypeDef htim4;
 extern bool apps_enabled;
 
 uint32_t adcdata[ADC_CHANNEL_COUNT];
-uint8_t test=0;
+uint8_t test = 0;
 
 static bool diff_flag = false;
 static bool permanent_fault = false;
@@ -31,9 +31,11 @@ void APPS_Init(void)
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 }
 
-void APPS_Loop(void) {
-    if (!apps_enabled) {
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);  // PWM'i sıfırla
+void APPS_Loop(void)
+{
+    if (!apps_enabled)
+    {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0); // PWM'i sıfırla
         return;
     }
 
@@ -45,25 +47,34 @@ void APPS_Loop(void) {
     float norm2 = (val2 - sensor2_min) * 100.0f / (sensor2_max - sensor2_min);
 
     // Clamp
-    if (norm1 < 0.0f) norm1 = 0.0f;
-    if (norm1 > 100.0f) norm1 = 100.0f;
-    if (norm2 < 0.0f) norm2 = 0.0f;
-    if (norm2 > 100.0f) norm2 = 100.0f;
+    if (norm1 < 0.0f)
+        norm1 = 0.0f;
+    if (norm1 > 100.0f)
+        norm1 = 100.0f;
+    if (norm2 < 0.0f)
+        norm2 = 0.0f;
+    if (norm2 > 100.0f)
+        norm2 = 100.0f;
 
     float diff = fabsf(norm1 - norm2);
     uint32_t now = __HAL_TIM_GET_COUNTER(&htim4);
 
     // %10 fark tespiti
-    if (diff > 10.0f) {
-        if (!diff_flag) {
+    if (diff > 10.0f)
+    {
+        if (!diff_flag)
+        {
             diff_flag = true;
             diff_start_time = now;
-        } else {
+        }
+        else
+        {
             uint32_t elapsed = (now >= diff_start_time)
-                             ? (now - diff_start_time)
-                             : (0xFFFFFFFF - diff_start_time + now + 1);
+                                   ? (now - diff_start_time)
+                                   : (0xFFFFFFFF - diff_start_time + now + 1);
 
-            if (elapsed >= 100) { // 100ms
+            if (elapsed >= 100)
+            { // 100ms
                 permanent_fault = true;
 
                 // PWM çıkışını kapat
@@ -77,12 +88,15 @@ void APPS_Loop(void) {
                     adcdata[i] = 0;
             }
         }
-    } else {
+    }
+    else
+    {
         diff_flag = false;
     }
 
     // Kalıcı hata yoksa PWM duty ayarla
-    if (!permanent_fault) {
+    if (!permanent_fault)
+    {
         pwm_buffer[0] = (uint32_t)norm1;
 
         // Alt ve üst sınır koruması
