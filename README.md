@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository contains the **Vehicle Control Unit (VCU)** software developed for the **Kocaeli University Formula Student Team (KOU Racing)** and its KR-02 electric vehicle, prepared for the FS Alpe Adria competition.
+This repository contains the **Vehicle Control Unit (VCU)** software developed for the **KR-02** electric vehicle, prepared for the FS Alpe Adria competition.
 
 ## System Architecture
 
