@@ -63,7 +63,7 @@ void APPS_Loop(void) {
                              ? (now - diff_start_time)
                              : (0xFFFFFFFF - diff_start_time + now + 1);
 
-            if (elapsed >= 1000) { // 100ms
+            if (elapsed >= 100) { // 100ms
                 permanent_fault = true;
 
                 // PWM çıkışını kapat
