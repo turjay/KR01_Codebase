@@ -73,7 +73,8 @@ static void MX_ADC2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-bool apps_enabled = false;
+extern bool apps_enabled;  // Sadece bildirim, tanım değil!
+
 
 /* USER CODE END 0 */
 
@@ -85,9 +86,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	char uart_buf[100];  // snprintf için
-	bool led_shown = false;
-
 
   /* USER CODE END 1 */
 
@@ -116,7 +114,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
-  GYRO_Init();
+  APPS_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,47 +122,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  APPS_Loop();
     /* USER CODE BEGIN 3 */
-	    GYRO_Loop(); // GYRO her zaman çalışır
 
-	    GPIO_PinState brake_pressed = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
-	    GPIO_PinState rtd_button    = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9);
-
-	    // RTD butonuna basıldı ve fren de basılıysa APPS aktif edilir
-	    if (brake_pressed == GPIO_PIN_SET && rtd_button == GPIO_PIN_SET && !apps_enabled)
-	    {
-	        apps_enabled = true;
-	        APPS_Init();
-
-	        if (!led_shown)
-	        {
-	            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);   // LED aç
-	            HAL_Delay(3000);
-	            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET); // LED kapa
-	            led_shown = true;
-	        }
-	    }
-
-	    // RTD butonu tekrar kapatılırsa APPS'i devreden çıkar
-	    if (apps_enabled && rtd_button == GPIO_PIN_RESET)
-	    {
-	        apps_enabled = false;
-	        led_shown = false;
-	        APPS_Deinit(); // Hem ADC hem PWM durur
-	    }
-
-	    if (apps_enabled)
-	    {
-	        APPS_Loop();  // Sadece APPS aktifse çalışsın
-	    }
-
-	    snprintf(uart_buf, sizeof(uart_buf),
-	             "APPS: %lu, %lu | GYRO: %lu, %lu\r\n",
-	             adcdata[0], adcdata[1], gyrodata[0], gyrodata[1]);
-
-	    HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
-	    HAL_Delay(300);
   }
   /* USER CODE END 3 */
 }
