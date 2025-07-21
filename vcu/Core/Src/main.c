@@ -2,26 +2,28 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : VCU main program body
+  * @brief          : Main program body
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 KOU Racing.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
-  * This software is licensed under MIT LICENSE.
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
-  /* USER CODE END Header */
+/* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "ready2drive.h"
 #include "apps.h"
 #include "gyro.h"
-#include "ready2drive.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -65,15 +67,12 @@ static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC2_Init(void);
-
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-bool apps_enabled = false;
-bool buzzer_beep = false;
 
 /* USER CODE END 0 */
 
@@ -118,19 +117,18 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Infinite loop */
-
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    Ready2Drive();
+	GYRO_Loop();
+	R2D_Loop();
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
   }
-  /* USER CODE END 3 */
 
+  /* USER CODE END 3 */
 }
 
 /**
@@ -524,8 +522,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* son olarak zehra yıldırıma her zaman yanımda olduğu için teşekkür ediyorum
-  o olmasaydı bu yoğunlukta asla kendime gelemezdim -türkay */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

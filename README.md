@@ -37,12 +37,12 @@ VCU-Project/
 
 ## To-do list
 
-- [ ] Buzzer - *Batu*
+- [X] Buzzer - *Batu*
 - [X] R2D - *Türkay*
 - [ ] VCU - *Türkay & Batu*
 - [X] Gyro - *Türkay*
-- [ ] BMS - *Batu*
-- [ ] BPPS
+- [X] BMS - *Batu*
+- [ ] BPPS - *Türkay*
 ---
 - [ ] Ekran -  *Mert*
 - [X] APPS - *Kerim*

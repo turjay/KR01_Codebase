@@ -1,4 +1,8 @@
+// SONRA HALLEDİLECEK
+
+/*
 #include "datalogger.h"
+#include <stdio.h>
 
 uint16_t adc_dma_buffer[ADC_BUFFER_SIZE];
 VehicleData_t carData;
@@ -51,3 +55,4 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
         buffer_ready = 2;
     }
 }
+*/
