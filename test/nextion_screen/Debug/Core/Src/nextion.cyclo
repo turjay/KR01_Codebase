@@ -1,2 +1,0 @@
-../Core/Src/nextion.c:14:6:Nextion_SendText	1
-../Core/Src/nextion.c:24:6:Nextion_Loop	3
