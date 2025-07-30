@@ -15,7 +15,7 @@ extern float norm1;
 
 
 
-extern uint32_t adcdata[ADC_CHANNEL_COUNT];
+extern uint16_t adcdata[ADC_CHANNEL_COUNT];
 extern bool apps_enabled;
 
 void APPS_Init(void);

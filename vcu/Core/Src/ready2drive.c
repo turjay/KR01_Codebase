@@ -1,59 +1,70 @@
 #include "ready2drive.h"
-#include "main.h"
 #include "apps.h"
-#include <string.h>
-#include <stdio.h>
+#include "bpps.h"       // brake_active flag için eklendi
+#include "nextion.h"
 
-extern UART_HandleTypeDef huart2;
-
-GPIO_PinState prev_rtd_button = GPIO_PIN_SET;
-GPIO_PinState rtd_button;
-
-char uart_buf[100];
+static GPIO_PinState prev_rtd_button = GPIO_PIN_SET;
 bool rtd_active = false;
 bool apps_enabled = false;
 bool buzzer_on = false;
 
+/**
+ * @brief Ready-to-Drive sistemini başlatır.
+ *        R2D butonunun ilk durumunu okur.
+ */
+void R2D_Init(void)
+{
+    prev_rtd_button = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_8); // R2D buton pini (PD8)
+}
+
+/**
+ * @brief Ready-to-Drive ana döngü fonksiyonu.
+ *
+ * - R2D butonunu okur (düşen kenar algılar).
+ * - Fren durumu (brake_active) ile birlikte R2D'yi kontrol eder.
+ * - APPS ve buzzer kontrolünü yapar.
+ */
 void R2D_Loop(void)
 {
-    rtd_button = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9);
-    GPIO_PinState brake_pressed = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
+    // RTD butonunu oku
+    GPIO_PinState rtd_button = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_8);
 
+    // RTD buton düşen kenar algılama
     if (prev_rtd_button == GPIO_PIN_SET && rtd_button == GPIO_PIN_RESET)
     {
-        if (!rtd_active && brake_pressed == GPIO_PIN_SET)
-        {
+        if (!rtd_active && brake_active) {
+            // R2D aktif ediliyor: Fren basılı ve RTD buton basıldı
             rtd_active = true;
             apps_enabled = true;
             APPS_Init();
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET); // Buzzer ON
+
+            // Buzzer 2 saniye çalar
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
             HAL_Delay(2000);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
         }
-        else if (rtd_active)
-        {
+        else if (rtd_active) {
+            // R2D devreden çıkarılıyor
             rtd_active = false;
             apps_enabled = false;
             APPS_Deinit();
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET); // Buzzer OFF
+
+            // Buzzer kapatılır (eğer açıksa)
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
         }
     }
 
     prev_rtd_button = rtd_button;
 
-    if (apps_enabled)
-    {
-        APPS_Loop();
+    // Buzzer uzatmalı kontrol
+    if (buzzer_on) {
+        HAL_Delay(3000);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+        buzzer_on = false;
     }
 
-    if (brake_pressed == GPIO_PIN_SET)
-        HAL_UART_Transmit(&huart2, (uint8_t *)"Brake ON\r\n", 10, HAL_MAX_DELAY);
-    if (rtd_button == GPIO_PIN_RESET)
-        HAL_UART_Transmit(&huart2, (uint8_t *)"RTD ON\r\n", 9, HAL_MAX_DELAY);
-
-    snprintf(uart_buf, sizeof(uart_buf),
-             "APPS: %lu, %lu\r\n", adcdata[0], adcdata[1]);
-    HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
-
-    HAL_Delay(300);
+    // APPS döngüsü çalıştırılır (eğer aktifse)
+    if (apps_enabled) {
+        APPS_Loop();
+    }
 }

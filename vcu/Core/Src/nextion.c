@@ -1,35 +1,48 @@
 #include "nextion.h"
+#include "stm32f4xx_hal.h"
+#include "main.h"
 #include <string.h>
 #include <stdio.h>
-#include "stm32f4xx_hal.h"
+#include <stdbool.h>
 
+extern UART_HandleTypeDef huart2;
 
-int data_numbers[7] = {12, 45, 78, 3, 89, 23, 56};  // Sadece tanımlama
-char* data_strings[3] = {"a", "b", "c"};
-const char* address[10] = {"n1", "n2", "n3", "n4", "n5", "n6", "n7", "t4", "t9", "t10"};
-
-extern UART_HandleTypeDef huart1;  // UART tanımlı olmalı
-
-// Text bileşenine metin gönderme
-void Nextion_SendText(UART_HandleTypeDef *huart, const char* component, const char* text) {
-    char buffer[100];
-    snprintf(buffer, sizeof(buffer), "%s.txt=\"%s\"", component, text);
-    HAL_UART_Transmit(huart, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-    uint8_t end_cmd[3] = {0xFF, 0xFF, 0xFF};
-    HAL_UART_Transmit(huart, end_cmd, 3, HAL_MAX_DELAY);
+/**
+ * @brief Nextion'a komut gönderir.
+ * @param cmd Gönderilecek komut stringi (örn: "t0.txt=\"Hello\"")
+ */
+void Nextion_SendCommand(const char *cmd) {
+    const uint8_t end_cmd[3] = {0xFF, 0xFF, 0xFF};  // Nextion terminatörü
+    HAL_UART_Transmit(&huart2, (uint8_t*)cmd, strlen(cmd), HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart2, end_cmd, 3, HAL_MAX_DELAY);
 }
 
-// Tüm verileri döngüyle ekrana gönder
-void Nextion_Loop() {
-    char number_str[10];
+/**
+ * @brief Ekranda SoC (State of Charge) bilgisini günceller.
+ * @param soc Pil doluluk oranı (0-100 %)
+ */
+void Nextion_UpdateSoC(uint8_t soc) {
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "t9.txt=\"%d%%\"", soc); // Örn: "85%"
+    Nextion_SendCommand(buffer);
+}
 
-    for (int i = 0; i < 10; i++) {
-        if (i < 7) {
-            snprintf(number_str, sizeof(number_str), "%d", data_numbers[i]);
-            Nextion_SendText(&huart1, address[i], number_str);
-        } else {
-            Nextion_SendText(&huart1, address[i], data_strings[i - 7]);
-        }
-    }
+/**
+ * @brief Ekranda Speed (Araç Hızı) bilgisini günceller.
+ * @param speed Araç hızı (km/h cinsinden)
+ */
+void Nextion_UpdateSpeed(uint16_t speed) {
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "t10.txt=\"%d km/h\"", speed);
+    Nextion_SendCommand(buffer);
+}
+
+/**
+ * @brief R2D (Ready-to-Drive) durumunu ekrana yazar.
+ * @param rtd_state true: ON, false: OFF
+ */
+void Nextion_UpdateR2D(bool rtd_state) {
+    char buffer[16];
+    snprintf(buffer, sizeof(buffer), "t11.txt=\"%s\"", rtd_state ? "ON" : "OFF");
+    Nextion_SendCommand(buffer);
 }

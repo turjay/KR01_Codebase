@@ -1,8 +1,10 @@
-# 🏎️ KOU Racing - VCU Project
+# 🏎️ OpenVCU
 
 ## Project Overview
 
 This repository contains the **Vehicle Control Unit (VCU)** software developed for the **KR-02** electric vehicle, prepared for the FS Alpe Adria competition.
+
+The main purpose of this project is to create a strong VCU project for the FOSS world through the collaborative work of the teams at the FSAE event.
 
 ## System Architecture
 

@@ -9,12 +9,13 @@ extern DMA_HandleTypeDef hdma_tim3_ch1;
 bool apps_enabled = false;
 float log_pwm = 0.0f;
 float norm1 = 0.0f;
-
-uint32_t adcdata[ADC_CHANNEL_COUNT] = {0};
-
+uint16_t adcdata[ADC_CHANNEL_COUNT];
+uint16_t pwm[1];
 static bool diff_flag = false;
 static bool permanent_fault = false;
-static uint32_t diff_start_time = 0;
+static uint16_t diff_start_time = 0;
+static float filtered_pwm = 0.0f;
+
 
 // Sensör aralıkları
 static uint16_t sensor1_min = 1280, sensor1_max = 4095;
@@ -58,8 +59,9 @@ void APPS_Loop(void)
 
     float diff = fabsf(norm1 - norm2);
     uint32_t now = __HAL_TIM_GET_COUNTER(&htim4);
+    diff_flag = false;
 
-    if (diff > 10.0f) {  // çünkü artık farklar 0-1 değil, 0–100 arası
+    if (0) {  // çünkü artık farklar 0-1 değil, 0–100 arası
         if (!diff_flag) {
             diff_flag = true;
             diff_start_time = now;
@@ -78,18 +80,39 @@ void APPS_Loop(void)
     }
 
     if (!permanent_fault) {
-        float norm1_scaled = norm1 / 100.0f;  // log hesaplaması için 0–1'e indir
+        float norm1_scaled = norm1 / 100.0f;  // log hesaplaması için 0–1'e indisr
         log_pwm = log10f(9.0f * norm1_scaled + 1.0f); // log(1)=0, log(10)=1
 
         pwm_buffer[0] = (uint32_t)(log_pwm * 49);    // 0–49 duty aralığı
 
-        if (pwm_buffer[0] < 1) {
+        if (pwm_buffer[0] < 3) {
             pwm_buffer[0] = 0;
         } else if (pwm_buffer[0] > 48) {
             pwm_buffer[0] = 49;
         }
 
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm_buffer[0]);
+
+        // PWM yumuşatma filtresi (örneğin alpha=0.1)
+        const float alpha = 0.1f;
+        filtered_pwm = (alpha * pwm_buffer[0]) + ((1.0f - alpha) * filtered_pwm);
+
+        // Yuvarlayarak integer değere çevir
+        uint32_t smooth_pwm = (uint32_t)(filtered_pwm + 0.5f);
+
+        // PWM değeri güvenli sınıra sokuluyor
+        if (smooth_pwm < 3) {
+            smooth_pwm = 0;
+        } else if (smooth_pwm > 48) {
+            smooth_pwm = 49;
+        }
+
+        // PWM çıkışını ayarla
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, smooth_pwm);
+
+        // Gözlemlemek için kullanıcıya gösterilen PWM (0–100)
+        pwm[0] = smooth_pwm * 100 / 49;
+
+
     }
 }
 

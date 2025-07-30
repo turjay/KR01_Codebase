@@ -1,0 +1,5 @@
+../Core/Src/apps.c:24:14:map_clamped	3
+../Core/Src/apps.c:31:6:APPS_Init	1
+../Core/Src/apps.c:39:6:APPS_Loop	10
+../Core/Src/apps.c:97:6:APPS_Deinit	1
+../Core/Src/apps.c:120:6:APPS_IsPermanentFault	1

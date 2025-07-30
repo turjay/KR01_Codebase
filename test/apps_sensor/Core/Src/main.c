@@ -22,7 +22,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "apps.h"
-#include "gyro.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -121,7 +120,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  APPS_Loop();
+	APPS_Loop();
     /* USER CODE BEGIN 3 */
 
   }

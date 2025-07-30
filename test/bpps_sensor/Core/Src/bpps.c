@@ -43,4 +43,5 @@ void BPPS_Loop(void) {
     } else {
         // HAL_GPIO_WritePin(GPIOX, GPIO_PIN_Y, GPIO_PIN_RESET);
     }
+    float brakePressure = BPPS_GetPressure();
 }

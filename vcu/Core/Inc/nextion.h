@@ -1,13 +1,47 @@
-#ifndef __DATA_H__
-#define __DATA_H__
+/**
+ ******************************************************************************
+ * @file    nextion.h
+ * @brief   Nextion HMI ekranı için başlık dosyası
+ * @details SoC, Speed ve R2D durum bilgilerini ekrana yansıtır.
+ ******************************************************************************
+ */
 
-#include "stm32f4xx_hal.h"
+#ifndef NEXTION_H
+#define NEXTION_H
 
-extern int data_numbers[7];
-extern char* data_strings[3];
-
-void Nextion_SendText(UART_HandleTypeDef *huart, const char* component, const char* text);
-void Nextion_Loop(void);
-
-
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+#include <stdbool.h>
+#include <stdint.h>
+
+/**
+ * @brief Nextion'a ham komut gönderir.
+ * @param cmd Komut stringi (örn: "t0.txt=\"Hello\"")
+ */
+void Nextion_SendCommand(const char *cmd);
+
+/**
+ * @brief SoC değerini ekrana gönderir.
+ * @param soc Pil doluluk oranı (0-100 %)
+ */
+void Nextion_UpdateSoC(uint8_t soc);
+
+/**
+ * @brief Araç hızını ekrana gönderir.
+ * @param speed Araç hızı (km/h)
+ */
+void Nextion_UpdateSpeed(uint16_t speed);
+
+/**
+ * @brief Ready-to-Drive (R2D) durumunu ekrana gönderir.
+ * @param rtd_state true: ON, false: OFF
+ */
+void Nextion_UpdateR2D(bool rtd_state);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* NEXTION_H */

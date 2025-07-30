@@ -1,0 +1,2 @@
+../Core/Src/ready2drive.c:9:6:R2D_Init	1
+../Core/Src/ready2drive.c:14:6:R2D_Loop	8

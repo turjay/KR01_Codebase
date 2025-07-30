@@ -122,7 +122,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	BPPS_Loop();
-    float brakePressure = BPPS_GetPressure();
 
     /* USER CODE BEGIN 3 */
     HAL_Delay(10);

@@ -22,7 +22,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "apps.h"
-#include "gyro.h"
 #include <string.h>
 #include <stdio.h>
 
