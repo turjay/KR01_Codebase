@@ -1,4 +1,3 @@
-../Core/Src/nextion.c:14:6:Nextion_SendCommand	1
-../Core/Src/nextion.c:24:6:Nextion_UpdateSoC	1
-../Core/Src/nextion.c:34:6:Nextion_UpdateSpeed	1
-../Core/Src/nextion.c:44:6:Nextion_UpdateR2D	2
+../Core/Src/nextion.c:34:6:Nextion_SendCommand	1
+../Core/Src/nextion.c:48:6:Nextion_UpdateRPM	1
+../Core/Src/nextion.c:62:6:Nextion_UpdateR2D	2

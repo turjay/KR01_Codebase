@@ -1,42 +1,41 @@
-/**
- ******************************************************************************
- * @file    nextion.h
- * @brief   Nextion HMI ekranı için başlık dosyası
- * @details SoC, Speed ve R2D durum bilgilerini ekrana yansıtır.
- ******************************************************************************
- */
-
 #ifndef NEXTION_H
 #define NEXTION_H
+
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stdint.h>
+// ============================
+// Function Prototypes
+// ============================
 
 /**
- * @brief Nextion'a ham komut gönderir.
- * @param cmd Komut stringi (örn: "t0.txt=\"Hello\"")
+ * @brief Sends a raw command string to the Nextion display.
+ *
+ * The function appends three 0xFF bytes (end marker) required by the Nextion protocol.
+ *
+ * @param cmd The command string to send (e.g., "t0.txt=\"Hello\"")
  */
 void Nextion_SendCommand(const char *cmd);
 
 /**
- * @brief SoC değerini ekrana gönderir.
- * @param soc Pil doluluk oranı (0-100 %)
+ * @brief Updates the display with the current RPM or throttle percentage.
+ *
+ * Sends a command to update the `t9.txt` field with the given RPM value.
+ * You can rename this function or adjust the label if you're displaying throttle % instead.
+ *
+ * @param rpm The value to display (RPM or percentage).
  */
-void Nextion_UpdateSoC(uint8_t soc);
+void Nextion_UpdateRPM(float rpm);
 
 /**
- * @brief Araç hızını ekrana gönderir.
- * @param speed Araç hızı (km/h)
- */
-void Nextion_UpdateSpeed(uint16_t speed);
-
-/**
- * @brief Ready-to-Drive (R2D) durumunu ekrana gönderir.
- * @param rtd_state true: ON, false: OFF
+ * @brief Updates the display with the RTD (Ready-To-Drive) state.
+ *
+ * Sends a command to update `t10.txt` field with "ON" or "OFF".
+ *
+ * @param rtd_state True if RTD is active, false otherwise.
  */
 void Nextion_UpdateR2D(bool rtd_state);
 
@@ -44,4 +43,4 @@ void Nextion_UpdateR2D(bool rtd_state);
 }
 #endif
 
-#endif /* NEXTION_H */
+#endif // NEXTION_H

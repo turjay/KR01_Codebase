@@ -1,93 +1,84 @@
-/**
- ******************************************************************************
- * @file    apps.h
- * @brief   Accelerator Pedal Position Sensor (APPS) modülü başlık dosyası
- * @details APPS modülü, pedal sensörlerinden ADC verilerini okur,
- *          hata kontrolü yapar ve PWM çıkışı üretir.
- *          Ayrıca kalıcı hata (permanent fault) yönetimi içerir.
- ******************************************************************************
- */
-
 #ifndef APPS_H
 #define APPS_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdbool.h>
 #include <stdint.h>
 
-/* --------------------------- Makrolar --------------------------- */
-
-// ADC kanal sayısı (pedal sensörleri için 2 kanal)
-#define ADC_CHANNEL_COUNT   2
-
-// APPS sensör toleransı (% fark)
-#define APPS_DIFF_TOLERANCE 10.0f
-
-// APPS sensör farkı hata süresi (ms veya timer count)
-#define APPS_FAULT_DELAY    100
-
-/* ------------------------- Dışa Açık Değişkenler ------------------------- */
+// ============================
+// Configuration
+// ============================
 
 /**
- * @brief ADC okuma buffer'ı (DMA ile doldurulur).
- *        adcdata[0] → APPS1, adcdata[1] → APPS2
+ * @brief Number of ADC channels used by APPS.
+ *
+ * Adjust this value according to the number of pedal sensors.
+ */
+#define ADC_CHANNEL_COUNT 2
+
+// ============================
+// External Variables
+// ============================
+
+/**
+ * @brief Normalized pedal position (sensor 1) in percentage (0-100%).
+ */
+extern float norm1;
+
+/**
+ * @brief ADC data buffer for pedal sensors.
  */
 extern uint32_t adcdata[ADC_CHANNEL_COUNT];
 
 /**
- * @brief PWM çıkış yüzdesi (%0 - %100)
+ * @brief Current PWM output value in percentage (0-100%).
  */
 extern uint16_t pwm[1];
 
 /**
- * @brief APPS modülü aktiflik bayrağı.
- *        true: Modül aktif, false: Modül devre dışı.
+ * @brief Indicates if APPS system is enabled.
+ *
+ * This flag should be controlled by the main system logic (e.g., R2D state).
  */
 extern bool apps_enabled;
 
-/* ------------------------ Fonksiyon Prototipleri ------------------------ */
+// ============================
+// Function Prototypes
+// ============================
 
 /**
- * @brief APPS modülünü başlatır.
+ * @brief Initializes the APPS system.
  *
- * - ADC DMA başlatılır.
- * - Zamanlayıcı ve PWM konfigüre edilir.
+ * - Starts ADC in DMA mode.
+ * - Starts timing for plausibility check.
+ * - Initializes and starts PWM output.
  */
 void APPS_Init(void);
 
 /**
- * @brief APPS ana döngü fonksiyonu.
+ * @brief Main APPS loop.
  *
- * - ADC verilerini okur.
- * - Pedal sensörlerini normalize eder (%0-100).
- * - Sensör farkını kontrol eder (plausibility check).
- * - PWM çıkışını hesaplar ve uygular.
- * - Hata durumunda PWM'i keser.
+ * - Reads ADC sensor data.
+ * - Checks plausibility between two pedal sensors.
+ * - Updates PWM output (with logarithmic scaling and filtering).
+ * - Shuts down throttle in case of fault.
  */
 void APPS_Loop(void);
 
 /**
- * @brief APPS modülünü durdurur ve PWM çıkışını keser.
+ * @brief Deinitializes the APPS system.
  *
- * - ADC DMA durdurulur.
- * - PWM timer kapatılır.
- * - PWM pini (PA6) GPIO output olarak LOW seviyesine çekilir.
+ * - Stops ADC DMA and PWM.
+ * - Reconfigures PWM pin as GPIO and forces it to 0V.
+ * - Resets internal variables.
  */
 void APPS_Deinit(void);
 
 /**
- * @brief Kalıcı hata durumunu sorgular.
+ * @brief Checks if a permanent APPS fault has occurred.
  *
- * @return true: APPS kalıcı hata durumu var.
- * @return false: APPS normal çalışıyor.
+ * @return true  If a permanent fault has been latched (requires system reset to clear).
+ * @return false If APPS is operating normally.
  */
 bool APPS_IsPermanentFault(void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* APPS_H */
+#endif // APPS_H

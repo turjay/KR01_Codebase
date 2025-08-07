@@ -1,64 +1,58 @@
-/**
- ******************************************************************************
- * @file    ready2drive.h
- * @brief   Ready-to-Drive (R2D) sisteminin başlık dosyası
- * @details Bu modül, FSAE aracında "Ready-to-Drive" mantığını yönetir.
- *          R2D butonu, fren (BPPS) ve APPS entegrasyonu ile çalışır.
- ******************************************************************************
- */
-
 #ifndef READY2DRIVE_H
 #define READY2DRIVE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdbool.h>
-#include "stm32f4xx_hal.h"
+#include <stdint.h>
 
-/* ------------------------ Dışa Açık Değişkenler ------------------------ */
+// ============================
+// Global Variables
+// ============================
 
 /**
- * @brief R2D sisteminin aktiflik durumu.
- *        true: R2D aktif (araç sürüşe hazır), false: R2D kapalı.
+ * @brief Indicates whether the RTD (Ready-To-Drive) system is active.
  */
 extern bool rtd_active;
 
 /**
- * @brief APPS sisteminin aktiflik durumu.
- *        R2D aktif olduğunda otomatik olarak APPS de etkinleşir.
+ * @brief Indicates whether APPS system is currently enabled.
+ *
+ * Used by APPS to decide whether throttle logic should run.
  */
 extern bool apps_enabled;
 
 /**
- * @brief Buzzer kontrol bayrağı.
- *        true: Buzzer açık, false: Buzzer kapalı.
+ * @brief Manual control flag to enable buzzer for 3 seconds.
+ *
+ * Set this flag to true from other modules to trigger buzzer alert.
  */
 extern bool buzzer_on;
 
-/* ------------------------ Fonksiyon Prototipleri ------------------------ */
+/**
+ * @brief Current live brake ADC value (can be monitored externally).
+ */
+extern volatile uint16_t brake_adc_live;
+
+// ============================
+// Function Prototypes
+// ============================
 
 /**
- * @brief Ready-to-Drive sistemini başlatır.
+ * @brief Initializes the RTD system.
  *
- * - R2D butonunun başlangıç durumunu okur.
- * - Sistem başlatıldığında güvenli başlangıç sağlar.
+ * Should be called once during startup.
  */
 void R2D_Init(void);
 
 /**
- * @brief Ready-to-Drive ana döngü fonksiyonu.
+ * @brief Main loop function for RTD.
  *
- * - R2D butonuna basılmasını (düşen kenar) algılar.
- * - BPPS (fren) basılıyken R2D'yi aktif eder.
- * - APPS modülünü kontrol eder.
- * - Buzzer yönetimi yapar.
+ * Should be called periodically (e.g., in main loop or timer loop).
+ * Handles:
+ *  - RTD button falling-edge detection
+ *  - Brake press validation
+ *  - Buzzer control
+ *  - Enabling/disabling APPS system
  */
 void R2D_Loop(void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* READY2DRIVE_H */
+#endif // READY2DRIVE_H

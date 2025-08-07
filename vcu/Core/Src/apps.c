@@ -5,32 +5,27 @@
 #include <stdlib.h>
 #include <math.h>
 
-// Harici timer ve ADC tanımları
-extern TIM_HandleTypeDef htim4;  // Zaman ölçümü için kullanılan timer
-extern TIM_HandleTypeDef htim3;  // PWM çıkışı için kullanılan timer
-extern ADC_HandleTypeDef hadc1;  // APPS sensörleri için ADC
+// External hardware handles
+extern TIM_HandleTypeDef htim4;      // Timer for time measurement (used for diff timing)
+extern TIM_HandleTypeDef htim3;      // Timer for PWM output
+extern ADC_HandleTypeDef hadc1;      // ADC handle for pedal sensors
 
-// Global değişkenler
-static float norm1 = 0.0f;                   // APPS1 normalize değeri (%)
-uint32_t adcdata[ADC_CHANNEL_COUNT];         // ADC DMA buffer
-uint16_t pwm[1];                             // PWM yüzdesi (%)
+// Global variables
+float norm1 = 0.0f;                  // Normalized value of pedal sensor 1
+uint32_t adcdata[ADC_CHANNEL_COUNT]; // ADC readings buffer
+uint16_t pwm[1];                     // PWM output percentage
 
-// Hata ve filtreleme bayrakları
-static bool diff_flag = false;               // Sensör farkı izleme bayrağı
-static bool permanent_fault = false;         // Kalıcı hata bayrağı
-static uint32_t diff_start_time = 0;         // Fark oluşum başlangıç zamanı (ms veya timer count)
-static float filtered_pwm = 0.0f;            // Filtrelenmiş PWM değeri
+bool diff_flag = false;              // Flag for APPS sensor difference detection
+bool permanent_fault = false;        // Latched permanent fault flag
+uint32_t diff_start_time = 0;        // Timer value when difference was first detected
+float filtered_pwm = 0.0f;           // Filtered PWM signal (low-pass filtered)
 
-// Sensör kalibrasyon min/max değerleri (ADC raw)
-static uint16_t sensor1_min = 1280, sensor1_max = 4095;  // APPS1
-static uint16_t sensor2_min = 640,  sensor2_max = 1980;  // APPS2
+// Sensor calibration values (raw ADC range)
+static uint16_t sensor1_min = 1900, sensor1_max = 4095;
+static uint16_t sensor2_min = 950,  sensor2_max = 2250;
 
 /**
- * @brief ADC değerini %0 - %100 aralığına map eder ve clamp uygular.
- * @param x       ADC değeri (raw)
- * @param in_min  ADC minimum kalibrasyon değeri
- * @param in_max  ADC maksimum kalibrasyon değeri
- * @return float  Normalize edilmiş pedal değeri (%)
+ * @brief Maps a value from input range to 0-100% and clamps it.
  */
 static float map_clamped(int32_t x, int32_t in_min, int32_t in_max)
 {
@@ -40,121 +35,116 @@ static float map_clamped(int32_t x, int32_t in_min, int32_t in_max)
 }
 
 /**
- * @brief APPS modülünü başlatır (ADC DMA ve PWM başlatılır).
+ * @brief Initializes APPS system: ADC DMA, timing, and PWM.
  */
 void APPS_Init(void)
 {
-    HAL_ADC_Start_DMA(&hadc1, adcdata, ADC_CHANNEL_COUNT);  // ADC DMA başlat
-    HAL_TIM_Base_Start(&htim4);                             // Zaman ölçümü için timer başlat
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);               // PWM çıkışı başlat
-    apps_enabled = true;                                    // APPS modülü aktif
+    HAL_ADC_Start_DMA(&hadc1, adcdata, ADC_CHANNEL_COUNT);  // Start ADC in DMA mode
+    HAL_TIM_Base_Start(&htim4);                             // Start timer (for diff timing)
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);               // Start PWM output
+    apps_enabled = true;
 }
 
 /**
- * @brief APPS ana döngüsü (pedal okumaları, hata kontrolü, PWM çıkışı).
+ * @brief Main APPS loop: Reads sensors, checks plausibility, and updates PWM output.
  */
 void APPS_Loop(void)
 {
-    // Timer post-init (CubeMX'in kritik gerekliliği)
-    HAL_TIM_MspPostInit(&htim3);
+    HAL_TIM_MspPostInit(&htim3);  // Critical: ensure PWM pin is initialized properly
 
-    // APPS devre dışı ise PWM sıfırlanır
+    // Disable throttle if APPS is disabled
     if (!apps_enabled) {
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);  // Force PWM to 0
         return;
     }
 
-    // ADC okumalarını normalize et
-    norm1 = map_clamped(adcdata[0], sensor1_min, sensor1_max);  // APPS1
-    float norm2 = map_clamped(adcdata[1], sensor2_min, sensor2_max); // APPS2
+    // Normalize pedal sensor values (0-100%)
+    norm1 = map_clamped(adcdata[0], sensor1_min, sensor1_max);
+    float norm2 = map_clamped(adcdata[1], sensor2_min, sensor2_max);
 
-    // Pedal alt eşiği (noise engellemek için %10 altını sıfırla)
+    // Apply deadzone: ignore noise below 10%
     if (norm1 < 10.0f) norm1 = 0.0f;
     if (norm2 < 10.0f) norm2 = 0.0f;
 
-    // %0-%100 aralığında clamp
+    // Clamp normalized values to [0%, 100%]
     norm1 = fminf(fmaxf(norm1, 0.0f), 100.0f);
     norm2 = fminf(fmaxf(norm2, 0.0f), 100.0f);
 
-    // Sensör farkını kontrol et
+    // Calculate absolute difference between sensors
     float diff = fabsf(norm1 - norm2);
-    uint32_t now = __HAL_TIM_GET_COUNTER(&htim4); // Timer sayacı
+    uint32_t now = __HAL_TIM_GET_COUNTER(&htim4);  // Current timer count
 
-    if (diff > 10.0f) {  // Sensörler arasında %10'dan fazla fark varsa
+    // Plausibility check: detect sustained sensor difference >10%
+    if (diff > 10.0f) {
         if (!diff_flag) {
             diff_flag = true;
-            diff_start_time = now;  // Fark başladığı zamanı kaydet
+            diff_start_time = now;
         } else {
-            // Timer taşmasını hesaba kat
+            // Calculate elapsed time with overflow handling
             uint32_t elapsed = (now >= diff_start_time)
                              ? (now - diff_start_time)
                              : (0xFFFFFFFF - diff_start_time + now + 1);
 
-            // Fark 100ms sürerse kalıcı hata
+            // If difference persists for >100 ms → permanent fault
             if (elapsed >= 100) {
                 permanent_fault = true;
-                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0); // PWM kes
+                __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);  // Force throttle to 0
                 return;
             }
         }
     } else {
-        diff_flag = false; // Fark düzeldiyse bayrağı sıfırla
+        diff_flag = false;
     }
 
-    // Kalıcı hata yoksa PWM hesapla
+    // If no permanent fault, calculate PWM output
     if (!permanent_fault) {
         float norm1_scaled = norm1 / 100.0f;
 
-        // Logaritmik pedal tepkisi
+        // Apply logarithmic scaling for smoother control near low throttle
         float log_pwm = log10f(9.0f * norm1_scaled + 1.0f);
-        float pwm_raw = log_pwm * 49.0f; // 0-49 arası PWM değeri
+        float pwm_raw = log_pwm * 49.0f;  // Scale to PWM steps (0-49)
 
-        // Low-pass filtre uygula
-        const float alpha = 0.1f;
+        // Apply low-pass filter for smoothing (alpha = 0.1)
+        const float alpha = 1.0f;
         filtered_pwm = (alpha * pwm_raw) + ((1.0f - alpha) * filtered_pwm);
 
-        // Yuvarla
+        // Round and clamp PWM value
         uint32_t smooth_pwm = (uint32_t)(filtered_pwm + 0.5f);
-
-        // Alt-üst limitler
         if (smooth_pwm < 3) smooth_pwm = 0;
         if (smooth_pwm > 48) smooth_pwm = 49;
 
-        // PWM çıkışı uygula
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, smooth_pwm);
-
-        // PWM yüzdesini kaydet
-        pwm[0] = smooth_pwm * 100 / 49;
+        // Update PWM output
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, smooth_pwm);
+        pwm[0] = smooth_pwm * 100 / 49;  // Store as percentage (0-100%)
     }
 }
 
 /**
- * @brief APPS modülünü devre dışı bırakır, PWM çıkışını kapatır.
+ * @brief Deinitializes APPS: stops ADC, PWM, and resets output pin to 0V.
  */
 void APPS_Deinit(void)
 {
-    HAL_ADC_Stop_DMA(&hadc1);                        // ADC durdur
-    HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);         // PWM durdur
+    HAL_ADC_Stop_DMA(&hadc1);                     // Stop ADC DMA
+    HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);      // Stop PWM
 
-    // PWM pini (PA6) GPIO output moduna alınır ve LOW çekilir
+    // Reconfigure PA6 as GPIO output (force 0V)
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); // Kesinlikle 0V çıkış
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET); // Ensure output is LOW
 
-    // Değişkenleri sıfırla
+    // Reset variables
     adcdata[0] = 0;
     adcdata[1] = 0;
     filtered_pwm = 0.0f;
 }
 
 /**
- * @brief APPS kalıcı hata durumunu döndürür.
- * @return true: Kalıcı hata var, false: Hata yok.
+ * @brief Returns true if a permanent APPS fault has occurred.
  */
 bool APPS_IsPermanentFault(void)
 {
