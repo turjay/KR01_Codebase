@@ -18,18 +18,3 @@ The system is built around a custom-designed Vehicle Control Unit (VCU) based on
 | Speed      | Hall-effect-based Speed Sensor          | Digital GPIO      |
 | Battery    | Libat Battery Telemetry Module          | CANopen           |
 | Display    | Nextion HMI Display                     | UART              |
-
-## Tools & Platforms
-
-- **Microcontroller:** STM32F407VGT7 (STM32F4 series)
-- **Software:** STM32CubeIDE, VSCode, KiCad, MakconX
-- **Protocols:** CANopen, UART, SPI, GPIO, ADC
-- **Bootloader & OTA Update System**  
-  CAN-based bootloader with support for **over-the-air (OTA)** or SD card firmware updates.
-
-- **Hardware-in-the-Loop (HIL) Simulation**  
-  Simulated environment to validate VCU behavior using virtual sensor/ECU input.
-
-- **Dashboard UI for Engineering Debug**  
-  A cross-platform debug interface (e.g., Qt or web-based) for visualizing real-time sensor and system data.
-
